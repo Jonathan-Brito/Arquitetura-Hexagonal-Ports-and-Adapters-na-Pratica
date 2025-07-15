@@ -1,10 +1,12 @@
 package br.com.brito.hexagonal.application.core.usecase;
 
+import br.com.brito.hexagonal.application.core.domain.Customer;
+import br.com.brito.hexagonal.application.ports.in.InsertCustomerInputPort;
 import br.com.brito.hexagonal.application.ports.out.FindAddressByZipCodeOutputPort;
 import br.com.brito.hexagonal.application.ports.out.InsertCustomerOutputPort;
 import br.com.brito.hexagonal.application.ports.out.SendCpfForValidationOutputPort;
 
-public class InsertCustomerUseCase {
+public class InsertCustomerUseCase implements InsertCustomerInputPort {
 
     private final FindAddressByZipCodeOutputPort findAddressByZipCodeOutputPort;
 
@@ -20,5 +22,13 @@ public class InsertCustomerUseCase {
         this.findAddressByZipCodeOutputPort = findAddressByZipCodeOutputPort;
         this.insertCustomerOutputPort = insertCustomerOutputPort;
         this.sendCpfForValidationOutputPort = sendCpfForValidationOutputPort;
+    }
+
+    @Override
+    public void insert(Customer customer, String zipCode) {
+        var address = findAddressByZipCodeOutputPort.find(zipCode);
+        customer.setAddress(address);
+        insertCustomerOutputPort.insert(customer);
+        sendCpfForValidationOutputPort.send(customer.getCpf());
     }
 }
